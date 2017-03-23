@@ -54,11 +54,11 @@ test('prefetch by manifest if no digest', t => {
     const srv = tnock(t, OPTS.registry)
     srv.get('/foo').reply(200, META)
     tnock(t, 'https://foo.bar').get('/x.tgz').reply(200, tarData)
-    
+
     return prefetch('foo@1.0.0', OPTS).then(() => {
       t.equal(srv.isDone(), true)
       return cache.ls(CACHE)
-    }).then(result => {    
+    }).then(result => {
       t.equal(Object.keys(result).length, 2)
     })
   })
@@ -76,6 +76,7 @@ test('use cache content if found', t => {
   const key = cache.key('registry-request', OPTS.registry + '/foo')
   return cache.put(CACHE, key, JSON.stringify(META), OPTS).then(digest => {
     OPTS.digest = digest
+    OPTS.hashAlgorithm = 'sha512'
     return prefetch('foo@1.0.0', OPTS).then(() => {
       return cache.ls(CACHE)
     }).then(result => {
@@ -92,11 +93,11 @@ test('prefetch by manifest if digest provided but no cache content found', t => 
     tnock(t, 'https://foo.bar').get('/x.tgz').reply(200, tarData)
     const sha = crypto.createHash('sha1').update(tarData).digest('hex')
     OPTS.digest = sha
-    
+
     return prefetch('foo@1.0.0', OPTS).then(() => {
       t.equal(srv.isDone(), true)
       return cache.ls(CACHE)
-    }).then(result => {    
+    }).then(result => {
       t.equal(Object.keys(result).length, 2)
     })
   })
